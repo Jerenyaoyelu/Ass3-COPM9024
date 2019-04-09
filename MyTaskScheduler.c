@@ -104,6 +104,7 @@ BinomialHeap *newHeap()
 	
 // }
 
+// O(1)
 //merge two smallestBs from two BHs
 HeapNode *MergeBT(BinomialHeap *H1, BinomialHeap *H2){
 	HeapNode *new, *temp;
@@ -142,6 +143,7 @@ HeapNode *MergeBT(BinomialHeap *H1, BinomialHeap *H2){
 	return new;
 }
 
+// O(1)
 //add binomial tree to a binomial heap(in increased degree)
 void AddBTToBH(BinomialHeap *NewHp, HeapNode *new){
 	if(NewHp->smallestB == NULL){
@@ -172,6 +174,7 @@ void AddBTToBH(BinomialHeap *NewHp, HeapNode *new){
 	NewHp->size = NewHp->size + new->degree + 1;
 }
 
+// O(log(n))
 //union two binomial heap
 BinomialHeap *UnionBH(BinomialHeap *H1, BinomialHeap *H2){
 	BinomialHeap *NewHp = newHeap();
@@ -227,6 +230,7 @@ BinomialHeap *UnionBH(BinomialHeap *H1, BinomialHeap *H2){
 	return NewHp;
 }
 
+// O(log(n))
 // put the time complexity analysis for Insert() here    
 void Insert(BinomialHeap *T, int k, int n, int c, int r, int d)
 { // k: key, n: task name, c: execution time, r: release time, d:deadline 
@@ -243,16 +247,88 @@ void Insert(BinomialHeap *T, int k, int n, int c, int r, int d)
 // put your time complexity for RemoveMin() here
 HeapNode *RemoveMin(BinomialHeap *T)
 {
- // put your code here
+	HeapNode *MinNode = T->smallestB, *crt = T->smallestB;
+	if(crt == NULL){
+		return NULL;
+	}
+	// find min node
+	while(crt != NULL){
+		if(crt->key < MinNode->key){
+			MinNode = crt;
+		}
+		crt = crt ->Nextsibling;
+	}
+
+	//method 2: not working
+	// // take out the whole BT from the heap
+	// if(MinNode == T->smallestB){
+	// 	T->smallestB = MinNode->Nextsibling;
+	// 	MinNode->Nextsibling->Lastsibling = NULL;
+	// 	MinNode->Nextsibling = NULL;
+	// }else{
+	// 	MinNode->Lastsibling->Nextsibling = MinNode->Nextsibling;
+	// 	MinNode->Nextsibling->Lastsibling = MinNode->Lastsibling;
+	// 	MinNode->Lastsibling = NULL;
+	// 	MinNode->Nextsibling = NULL;
+	// }
+	// // make the reminder of the taken-out BT serveral BTs
+	// // and add them to the original BH one by one
+	// HeapNode *temp;
+	// while(MinNode->child != NULL){
+	// 	temp = MinNode->child;
+	// 	MinNode->child = temp->Nextsibling;
+	// 	if(MinNode->child != NULL){
+	// 		MinNode->child->Lastsibling = NULL;
+	// 	}
+	// 	temp->Nextsibling = NULL;
+	// // 	// AddBTToBH(T,temp); not applicable here.
+	// }
+
+	//method 1:not working
+	// Changes should be made in-place, so this is not working!
+	// // take out the whole BT from the heap
+	// if(MinNode == T->smallestB){
+	// 	T->smallestB = MinNode->Nextsibling;
+	// 	MinNode->Nextsibling->Lastsibling = NULL;
+	// 	MinNode->Nextsibling = NULL;
+	// }else{
+	// 	MinNode->Lastsibling->Nextsibling = MinNode->Nextsibling;
+	// 	MinNode->Nextsibling->Lastsibling = MinNode->Lastsibling;
+	// 	MinNode->Lastsibling = NULL;
+	// 	MinNode->Nextsibling = NULL;
+	// }
+	// // make the reminder of the taken-out BT a new heap
+	// BinomialHeap *reminder = newHeap();
+	// reminder->smallestB = MinNode->child;
+	// reminder->tail = MinNode->child;
+	// reminder->size = MinNode->degree;
+	// while(reminder->tail->Nextsibling != NULL){
+	// 	reminder->tail = reminder->tail->Nextsibling;
+	// }
+	// MinNode->child = NULL;
+	// // Union reminder of the taken-out BT and the original BH
+	// BinomialHeap *AfterRm = UnionBH(T,reminder);
+	return MinNode;
 }
 
+// O(log(n))
 int Min(BinomialHeap *T)
 {
-  // put your code here
+  HeapNode *MinNode = T->smallestB, *crt = T->smallestB;
+	if(crt == NULL){
+		return NULL;
+	}
+	// find min node
+	while(crt != NULL){
+		if(crt->key < MinNode->key){
+			MinNode = crt;
+		}
+		crt = crt ->Nextsibling;
+	}
+	return MinNode->key;
 }
 
-
-// put your time complexity analysis for MyTaskScheduler here
+// O(nlog(n))
 int TaskScheduler(char *f1, char *f2, int m )
 {
 	// read input
@@ -350,7 +426,10 @@ int TaskScheduler(char *f1, char *f2, int m )
 	// write output
 	fp = fopen(f2,"w+");
 	rewind(fp);
-	fprintf();
+	for(int i = 1; i <= output[0];i++){
+		fprintf(fp,"%d",output[i]);
+	}
+	fclose(fp);
 	return 1;
 }
 
