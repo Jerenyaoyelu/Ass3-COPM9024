@@ -68,41 +68,8 @@ BinomialHeap *newHeap()
 	return T;
 }
 
-// // get array of all roots in BH
-// void GetRtA(BinomialHeap *H, HeapNode *RtA[]){
-// 	HeapNode *crt = H->smallestBT;
-// 	while(crt != NULL){
-// 		RtA[log(crt->degree+1)+1] = crt;
-// 		RtA[0] ++;
-// 		crt = crt->Nextsibling;
-// 	}
-// }
+void print(BinomialHeap *T);
 
-// // merge two binomial heaps
-// BinomialHeap *Merge(BinomialHeap *H1, BinomialHeap *H2){
-// 	BinomialHeap *new = newHeap();
-// 	// store all the roots of BT in the corresponding position of array in the order of B0,B1,B2...
-// 	HeapNode *RtArray1[log(H1->size)+1];
-// 	HeapNode *RtArray2[log(H2->size)+1];
-// 	GetRtA(H1,RtArray1);
-// 	GetRtA(H2,RtArray2);
-// 	int len = max(RtArray1[0],RtArray2[0]);
-// 	for(int i = 1; i <= len; i++){
-// 		if(RtArray1[i] != NULL && RtArray2[i] != NULL){
-// 			// if(RtArray1[i]->Lastsibling != NULL)
-// 			RtArray1[i]->Lastsibling->Nextsibling = RtArray1[i]->Nextsibling;
-// 			RtArray1[i]->Nextsibling->Lastsibling = RtArray1[i]->Lastsibling;
-// 			RtArray1[i]->Lastsibling = NULL;
-// 			RtArray1[i]->Nextsibling = RtArray2[i]->child;
-// 			RtArray2[i]->child->Lastsibling = RtArray1[i];
-// 			RtArray2[i]->child = RtArray1[i];
-// 			RtArray2[i]->degree = RtArray1[i]->degree+1;
-// 		}else if(RtArray1[i] != NULL){
-
-// 		}
-// 	}
-	
-// }
 
 // O(1)
 //merge two smallestBs from two BHs
@@ -240,14 +207,11 @@ void Insert(BinomialHeap *T, int k, int n, int c, int r, int d)
 	BinomialHeap *B0 = newHeap();
 	B0->size ++;
 	B0->smallestB = new;
+	// print(B0);
 	BinomialHeap *newH;
 	newH = UnionBH(T,B0);
 }
 
-// //maintain the heap property
-// void MintnHP(BinomialHeap *T){
-
-// }
 
 // O(log(n))
 // to-merge two heaps are two parts from same BH T, so the sum of nodes from this two heaps are n
@@ -307,8 +271,9 @@ HeapNode *RemoveMin(BinomialHeap *T)
 	reminder->smallestB = MinNode->child;
 	reminder->tail = MinNode->child;
 	reminder->size = MinNode->degree;
-	while(reminder->tail->Nextsibling != NULL){
-		reminder->tail = reminder->tail->Nextsibling;
+	// because child points to the child with largest degree
+	while(reminder->smallestB->Nextsibling != NULL){
+		reminder->smallestB = reminder->smallestB->Nextsibling;
 	}
 	MinNode->child = NULL;
 	// Union reminder of the taken-out BT and the original BH
@@ -325,7 +290,7 @@ int Min(BinomialHeap *T)
 {
   HeapNode *MinNode = T->smallestB, *crt = T->smallestB;
 	if(crt == NULL){
-		return NULL;
+		return -1;
 	}
 	// find min node
 	while(crt != NULL){
@@ -337,12 +302,21 @@ int Min(BinomialHeap *T)
 	return MinNode->key;
 }
 
+// for testing
+void print(BinomialHeap *T){
+	HeapNode *t =T->smallestB;
+	while(t!= NULL){
+		printf("task %d\n",t->TaskName);
+		t = t->Nextsibling;
+	}
+}
+
 // O(nlog(n))
 int TaskScheduler(char *f1, char *f2, int m )
 {
 	// read input
 	FILE *fp;
-	char data_string[255];
+	int *data = (int *)malloc(255 * sizeof(int));
 	char data_pieces[255];
 	fp = fopen(f1,"r");
 	if(fp == NULL){
@@ -354,23 +328,26 @@ int TaskScheduler(char *f1, char *f2, int m )
 		if(feof(fp)){
 			break;
 		}
-		strcat(data_string,data_pieces);
+		data[data[0]+1] = atoi(data_pieces);
+		data[0]++;
 	}
 	fclose(fp);
 	// insert all task nodes into PQ1(release time as the key)
 	BinomialHeap *PQ1 = newHeap();
-	for(int i = 0; i< strlen(data_string); i = i + 4){
-		if(data_string[i] < 0 || data_string[i+1] <= 0 || data_string[i+2] < 0 || data_string[i+3] <= 0){
+	for(int i = 1; i<= data[0]; i = i + 4){
+		if(data[i] < 0 || data[i+1] <= 0 || data[i+2] < 0 || data[i+3] <= 0){
 			printf("Input error when reading the attribute of task %d",i);
 			exit(0);
 		}
-		int k = data_string[i+2] - '0';
-		int n = data_string[i] - '0';
-		int c = data_string[i+1] - '0';
-		int r = data_string[i+2] - '0';
-		int d = data_string[i+3] - '0';
+		int k = data[i+2];
+		int n = data[i];
+		int c = data[i+1];
+		int r = data[i+2];
+		int d = data[i+3];
+		// problem:
 		Insert(PQ1,k,n,c,r,d);
 	}
+	print(PQ1);
 	// scheduling
 	BinomialHeap *PQ2 = newHeap();
 	// using PQ to maintain all the cores.
@@ -445,7 +422,7 @@ int TaskScheduler(char *f1, char *f2, int m )
 
 int main() //sample main for testing 
 { int i;
-  i=TaskScheduler("samplefile1.txt", "feasibleschedule1.txt", 4);
+  i=TaskScheduler("test.txt", "feasibleschedule1.txt", 4);
   if (i==0) printf("No feasible schedule!\n");
 //   /* There is a feasible schedule on 4 cores */
 //   i=TaskScheduler("samplefile1.txt", "feasibleschedule2.txt", 3);
