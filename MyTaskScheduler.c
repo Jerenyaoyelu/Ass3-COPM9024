@@ -174,7 +174,7 @@ void AddBTToBH(BinomialHeap *NewHp, HeapNode *new){
 	NewHp->size = NewHp->size + new->degree + 1;
 }
 
-// O(log(n))
+// O(log(n+m))
 //union two binomial heap
 BinomialHeap *UnionBH(BinomialHeap *H1, BinomialHeap *H2){
 	BinomialHeap *NewHp = newHeap();
@@ -244,7 +244,14 @@ void Insert(BinomialHeap *T, int k, int n, int c, int r, int d)
 	newH = UnionBH(T,B0);
 }
 
-// put your time complexity for RemoveMin() here
+// //maintain the heap property
+// void MintnHP(BinomialHeap *T){
+
+// }
+
+// O(log(n))
+// to-merge two heaps are two parts from same BH T, so the sum of nodes from this two heaps are n
+// so the time complexity remains O(log(n)) 
 HeapNode *RemoveMin(BinomialHeap *T)
 {
 	HeapNode *MinNode = T->smallestB, *crt = T->smallestB;
@@ -284,30 +291,32 @@ HeapNode *RemoveMin(BinomialHeap *T)
 	// // 	// AddBTToBH(T,temp); not applicable here.
 	// }
 
-	//method 1:not working
-	// Changes should be made in-place, so this is not working!
-	// // take out the whole BT from the heap
-	// if(MinNode == T->smallestB){
-	// 	T->smallestB = MinNode->Nextsibling;
-	// 	MinNode->Nextsibling->Lastsibling = NULL;
-	// 	MinNode->Nextsibling = NULL;
-	// }else{
-	// 	MinNode->Lastsibling->Nextsibling = MinNode->Nextsibling;
-	// 	MinNode->Nextsibling->Lastsibling = MinNode->Lastsibling;
-	// 	MinNode->Lastsibling = NULL;
-	// 	MinNode->Nextsibling = NULL;
-	// }
-	// // make the reminder of the taken-out BT a new heap
-	// BinomialHeap *reminder = newHeap();
-	// reminder->smallestB = MinNode->child;
-	// reminder->tail = MinNode->child;
-	// reminder->size = MinNode->degree;
-	// while(reminder->tail->Nextsibling != NULL){
-	// 	reminder->tail = reminder->tail->Nextsibling;
-	// }
-	// MinNode->child = NULL;
-	// // Union reminder of the taken-out BT and the original BH
-	// BinomialHeap *AfterRm = UnionBH(T,reminder);
+	// take out the whole BT from the heap
+	if(MinNode == T->smallestB){
+		T->smallestB = MinNode->Nextsibling;
+		MinNode->Nextsibling->Lastsibling = NULL;
+		MinNode->Nextsibling = NULL;
+	}else{
+		MinNode->Lastsibling->Nextsibling = MinNode->Nextsibling;
+		MinNode->Nextsibling->Lastsibling = MinNode->Lastsibling;
+		MinNode->Lastsibling = NULL;
+		MinNode->Nextsibling = NULL;
+	}
+	// make the reminder of the taken-out BT a new heap
+	BinomialHeap *reminder = newHeap();
+	reminder->smallestB = MinNode->child;
+	reminder->tail = MinNode->child;
+	reminder->size = MinNode->degree;
+	while(reminder->tail->Nextsibling != NULL){
+		reminder->tail = reminder->tail->Nextsibling;
+	}
+	MinNode->child = NULL;
+	// Union reminder of the taken-out BT and the original BH
+	BinomialHeap *AfterRm = UnionBH(T,reminder);
+	// update the original BH
+	T->smallestB = AfterRm->smallestB;
+	T->size = AfterRm->size;
+	T->tail = AfterRm->tail;
 	return MinNode;
 }
 
@@ -388,7 +397,8 @@ int TaskScheduler(char *f1, char *f2, int m )
 			if(timepoint <= t){
 				HeapNode *ScdulingT = RemoveMin(PQ2);
 				HeapNode *ScdulingC = RemoveMin(cores);
-				ScdulingC->key += ScdulingT->Etime;
+				// should be the current time plus the execution time.
+				ScdulingC->key = t + ScdulingT->Etime;
 				//insert core back
 				Insert(cores,ScdulingC->key,ScdulingC->TaskName,0,0,0);
 				if(ScdulingC->key <= ScdulingT->Dline){
