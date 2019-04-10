@@ -72,47 +72,42 @@ void print(BinomialHeap *T);
 
 
 // O(1)
-//merge two smallestBs from two BHs
-HeapNode *MergeBT(BinomialHeap *H1, BinomialHeap *H2){
+//merge two binomial trees( with the same degree )
+HeapNode *MergeBT(HeapNode *t1, HeapNode *t2){
 	HeapNode *new, *temp;
-	if(H1->smallestB == NULL){
-		return H2->smallestB;
+	if(t1 == NULL){
+		return NULL;
 	}
-	if(H2->smallestB == NULL){
-		return H1->smallestB;
-	}
-	if(H1->smallestB->key >= H2->smallestB->key){
-		//extract temp
-		temp = H1->smallestB;
-		H1->smallestB = temp->Nextsibling;
-		temp->Nextsibling->Lastsibling = NULL;
-		//extract new
-		new = H2->smallestB;
-		H2->smallestB = new->Nextsibling;
-		new->Nextsibling->Lastsibling = NULL;
-		//make the H1->smallestB the child of H2->smallestB
-		temp->Nextsibling = new->child;
-		new->child = temp;
+	if(t1->key >= t2->key){
+		t1->Nextsibling = t2->child;
+		if(t2->child!=NULL)
+		{// t2 has more than one node
+			t2->child->Lastsibling = t1;
+		}
+		t2->child = t1;
+		new = t2;
+		temp = t1;
 	}else{
-		//extract temp
-		temp = H2->smallestB;
-		H2->smallestB = temp->Nextsibling;
-		temp->Nextsibling->Lastsibling = NULL;
-		//extract new
-		new = H1->smallestB;
-		H1->smallestB = new->Nextsibling;
-		new->Nextsibling->Lastsibling = NULL;
-		//make the H2->smallestB the child of H1->smallestB
-		temp->Nextsibling = new->child;
-		new->child = temp;
+		//make the t2 the child of t1
+		t2->Nextsibling = t1->child;
+		if(t1->child!=NULL)
+		{// t1 has more than one node
+			t1->child->Lastsibling = t2;
+		}
+		t1->child = t2;
+		new = t1;
+		temp = t2;
 	}
 	new->degree = new->degree + temp->degree + 1;
+	// printf("ee %d,%d,%d\n",new->TaskName,new->degree,new->Dline);
 	return new;
 }
 
 // O(1)
 //add binomial tree to a binomial heap(in increased degree)
 void AddBTToBH(BinomialHeap *NewHp, HeapNode *new){
+	//update size first
+	NewHp->size = NewHp->size + new->degree + 1;
 	if(NewHp->smallestB == NULL){
 		NewHp->smallestB = new;
 		NewHp->tail = NewHp->smallestB;
@@ -121,24 +116,29 @@ void AddBTToBH(BinomialHeap *NewHp, HeapNode *new){
 		if(NewHp->tail->degree == new->degree){
 			// key of tail is larger than key of new
 			if(NewHp->tail->key >= new->key){
-				if(NewHp->tail->Lastsibling != NULL){
+				//update degree first.
+				new->degree = new->degree + NewHp->tail->degree+1;
+				if(NewHp->tail != NewHp->smallestB){
 					NewHp->tail->Lastsibling->Nextsibling = new;
+				}else{
+					NewHp->smallestB = new;
 				}
 				NewHp->tail->Nextsibling = new->child;
 				new->child = NewHp->tail;
 				NewHp->tail->Lastsibling = NULL;
 				NewHp->tail = new;
 			}else{// key of tail is smaller than key of new
+				//update degree first.
+				NewHp->tail->degree = NewHp->tail->degree + new->degree + +1;
 				new->Nextsibling = NewHp->tail->child;
 				NewHp->tail->child = new;
 			}
 		}else{//new added binomial tree has the larger degree than the last binomial tree in the new BH
 			NewHp->tail->Nextsibling = new;
 			new->Lastsibling = NewHp->tail;
-			NewHp->tail = NewHp->tail->Nextsibling;
+			NewHp->tail = new;
 		}
 	}
-	NewHp->size = NewHp->size + new->degree + 1;
 }
 
 // O(log(n+m))
@@ -153,46 +153,89 @@ BinomialHeap *UnionBH(BinomialHeap *H1, BinomialHeap *H2){
 		return H1;
 	}
 	while(1){
+		// H1 and H2 are all empty, terminates the loop
 		if(H1->smallestB == NULL && H2->smallestB == NULL){
 			break;
-		}else if(H1->smallestB != NULL){
-			new = H1->smallestB;
-			H1->size = H1->size - new->degree - 1;
-			//move the smallestB
-			H1->smallestB = H1->smallestB->Nextsibling;
-		}else if(H2->smallestB != NULL){
-			new = H2->smallestB;
-			H2->size = H2->size - new->degree - 1;
-			//move the smallestB
-			H2->smallestB = H2->smallestB->Nextsibling;
-		}else{
-			//binomial trees from H1 and H2 have the same degree
+		}else if(H1->smallestB != NULL && H2->smallestB != NULL)
+		{// H1 and H2 are all not empty
+			//binomial trees of smallest k from H1 and H2 have the same degree
 			if(H1->smallestB->degree == H2->smallestB->degree){
 				//minus size of each BH
 				H1->size = H1->size - H1->smallestB->degree - 1;
 				H2->size = H2->size - H2->smallestB->degree - 1;
+				//extract two BTs
+				HeapNode *t1 = H1->smallestB, *t2 = H2->smallestB;
+				H1->smallestB = t1->Nextsibling;
+				//H1 has more than 1 tree before extracting
+				if(H1->smallestB != NULL){
+					H1->smallestB->Lastsibling = NULL;
+				}else{//H1 is empty after extracting
+					H1->tail = H1->smallestB;
+				}
+				t1->Nextsibling = NULL;
+				H2->smallestB = t2->Nextsibling;
+				//H2 has more than 1 tree before extracting
+				if(H2->smallestB != NULL){
+					H2->smallestB->Lastsibling = NULL;
+				}else{//H2 is empty after extracting
+					H2->tail = H2->smallestB;
+				}
+				t2->Nextsibling = NULL;
 				//merge two BTs from two BHs
-				HeapNode *new = MergeBT(H1,H2);
-				//add new BT to the new heap
-				AddBTToBH(NewHp,new);
-			}else {
-				if(H1->smallestB->degree >= H2->smallestB->degree){//binomial trees from H2 has the smaller degree
+				new = MergeBT(t1,t2);
+			}else {//binomial trees of smallest k from H1 and H2 have the different degree
+				if(H1->smallestB->degree >= H2->smallestB->degree)
+				{//binomial trees of smallest k from H2 has the smaller degree
 					new = H2->smallestB;
 					H2->size = H2->size - new->degree - 1;
 					//move the smallestB
-					H2->smallestB = H2->smallestB->Nextsibling;
-				}else{//binomial trees from H1 has the smaller degree
+					H2->smallestB = new->Nextsibling;
+					if(H2->smallestB != NULL){//more than one tree before extracting
+						H2->smallestB->Lastsibling = NULL;
+					}else{//empty after extracting
+						H2->tail = H2->smallestB;
+					}
+				}else
+				{//binomial trees of smallest k from H1 has the smaller degree
 					new = H1->smallestB;
 					H1->size = H1->size - new->degree - 1;
 					//move the smallestB
 					H1->smallestB = H1->smallestB->Nextsibling;
+					if(H1->smallestB != NULL){//more than one tree before extracting
+						H1->smallestB->Lastsibling = NULL;
+					}else{//empty after extracting
+						H1->tail = H1->smallestB;
+					}
 				}
 				//extract new from H2
-				new->Nextsibling->Lastsibling = NULL;
 				new->Nextsibling = NULL;
-				AddBTToBH(NewHp,new);
 			}
+		}else if(H1->smallestB != NULL)
+		{// H2 is empty
+			new = H1->smallestB;
+			H1->size = H1->size - new->degree - 1;
+			//move the smallestB
+			H1->smallestB = H1->smallestB->Nextsibling;
+			if(H1->smallestB != NULL){//more than one tree before extracting
+				H1->smallestB->Lastsibling = NULL;
+			}else{//empty after extracting
+				H1->tail = H1->smallestB;
+			}
+			new->Nextsibling = NULL;
+		}else{// H1 is empty
+			new = H2->smallestB;
+			H2->size = H2->size - new->degree - 1;
+			//move the smallestB
+			H2->smallestB = H2->smallestB->Nextsibling;
+			if(H2->smallestB != NULL){//more than one tree before extracting
+				H2->smallestB->Lastsibling = NULL;
+			}else{//empty after extracting
+				H2->tail = H2->smallestB;
+			}
+			new->Nextsibling = NULL;
 		}
+		//add new BT to the new heap
+		AddBTToBH(NewHp,new);
 	}
 	return NewHp;
 }
@@ -207,9 +250,14 @@ void Insert(BinomialHeap *T, int k, int n, int c, int r, int d)
 	BinomialHeap *B0 = newHeap();
 	B0->size ++;
 	B0->smallestB = new;
-	// print(B0);
+	// printf("%d\n",B0->smallestB->TaskName);
 	BinomialHeap *newH;
+	// problem
 	newH = UnionBH(T,B0);
+	// update binomial Heap T
+	T->size = newH->size;
+	T->smallestB = newH->smallestB;
+	T->tail = newH->tail;
 }
 
 
@@ -306,7 +354,7 @@ int Min(BinomialHeap *T)
 void print(BinomialHeap *T){
 	HeapNode *t =T->smallestB;
 	while(t!= NULL){
-		printf("task %d\n",t->TaskName);
+		printf("task %d,%d,%d\n",t->TaskName,t->degree,t->Dline);
 		t = t->Nextsibling;
 	}
 }
@@ -325,6 +373,7 @@ int TaskScheduler(char *f1, char *f2, int m )
 	}
 	while(1){
 		fscanf(fp,"%s",data_pieces);
+		// a newline is not the indicator of the end of file
 		if(feof(fp)){
 			break;
 		}
@@ -334,9 +383,12 @@ int TaskScheduler(char *f1, char *f2, int m )
 	fclose(fp);
 	// insert all task nodes into PQ1(release time as the key)
 	BinomialHeap *PQ1 = newHeap();
+	// for(int i = 0; i<= data[0]; i = i + 1){
+	// 	printf("%d\n",data[i]);
+	// }
 	for(int i = 1; i<= data[0]; i = i + 4){
 		if(data[i] < 0 || data[i+1] <= 0 || data[i+2] < 0 || data[i+3] <= 0){
-			printf("Input error when reading the attribute of task %d",i);
+			printf("Input error when reading the attribute of task %d\n",data[i]);
 			exit(0);
 		}
 		int k = data[i+2];
@@ -344,79 +396,78 @@ int TaskScheduler(char *f1, char *f2, int m )
 		int c = data[i+1];
 		int r = data[i+2];
 		int d = data[i+3];
-		// problem:
 		Insert(PQ1,k,n,c,r,d);
 	}
 	print(PQ1);
 	// scheduling
-	BinomialHeap *PQ2 = newHeap();
-	// using PQ to maintain all the cores.
-	// the completion time of current task in this core will be the key
-	// initially, all keys are 0;
-	BinomialHeap *cores = newHeap();
-	for(int i = 1; i <= m;i++){
-		Insert(cores,0,i,0,0,0);
-	}
-	// int timepoint[m+1];
-	int output[256];
-	int t = 0;
-	while(1){
-		//task is ready, dequeue from PQ1, enqueue into PQ2
-		if(PQ1->smallestB != NULL && Min(PQ1)<=t){
-			HeapNode *RedyTsk = RemoveMin(PQ1);
-			//insert ready task to PQ2
-			Insert(PQ2,RedyTsk->Dline,RedyTsk->TaskName,RedyTsk->Etime,RedyTsk->Rtime,RedyTsk->Dline);
-		}
-		//if there existing ready task
-		if(PQ2->smallestB != NULL){
-			//look through all cores to find the first idle core
-			int timepoint = Min(cores);
-			if(timepoint <= t){
-				HeapNode *ScdulingT = RemoveMin(PQ2);
-				HeapNode *ScdulingC = RemoveMin(cores);
-				// should be the current time plus the execution time.
-				ScdulingC->key = t + ScdulingT->Etime;
-				//insert core back
-				Insert(cores,ScdulingC->key,ScdulingC->TaskName,0,0,0);
-				if(ScdulingC->key <= ScdulingT->Dline){
-					output[output[0]+1] = ScdulingT->TaskName;
-					output[output[0]+2] = ScdulingC->TaskName;
-					output[output[0]+3] = t;
-					output[0] += 3;
-				}else{
-					return 0;
-				}
-			}
-			// for(int i = 1; i<=m;i++){
-			// 	if(timepoint[i]<=t){
-			// 		HeapNode *ScdulingT = RemoveMin(PQ2);
-			// 		//schedule task in core i, increase the corresponding timepoint.
-			// 		timepoint[i] = ScdulingT->Etime + timepoint[i];
-			// 		if(timepoint[i] <=  ScdulingT->Dline){
-			// 			output[output[0]+1] = ScdulingT->TaskName;
-			// 			output[output[0]+2] = i;
-			// 			output[output[0]+3] = t;
-			// 			output[0] += 3;
-			// 			break;
-			// 		}else{
-			// 			return 0;
-			// 		}
-			// 	}
-			// }
-		}
-		t++;
-		//if PQ1 and PQ2 are all empty, then terminates the loop
-		if(PQ1->smallestB == NULL && PQ2->smallestB == NULL){
-			break;
-		}
-	}
-	// write output
-	fp = fopen(f2,"w+");
-	rewind(fp);
-	for(int i = 1; i <= output[0];i++){
-		fprintf(fp,"%d",output[i]);
-	}
-	fclose(fp);
+	// BinomialHeap *PQ2 = newHeap();
+	// // using PQ to maintain all the cores.
+	// // the completion time of current task in this core will be the key
+	// // initially, all keys are 0;
+	// BinomialHeap *cores = newHeap();
+	// for(int i = 1; i <= m;i++){
+	// 	Insert(cores,0,i,0,0,0);
+	// }
+	// // int timepoint[m+1];
+	// int output[256];
+	// int t = 0;
+	// while(1){
+	// 	//task is ready, dequeue from PQ1, enqueue into PQ2
+	// 	if(PQ1->smallestB != NULL && Min(PQ1)<=t){
+	// 		HeapNode *RedyTsk = RemoveMin(PQ1);
+	// 		//insert ready task to PQ2
+	// 		Insert(PQ2,RedyTsk->Dline,RedyTsk->TaskName,RedyTsk->Etime,RedyTsk->Rtime,RedyTsk->Dline);
+	// 	}
+	// 	//if there existing ready task
+	// 	if(PQ2->smallestB != NULL){
+	// 		//look through all cores to find the first idle core
+	// 		int timepoint = Min(cores);
+	// 		if(timepoint <= t){
+	// 			HeapNode *ScdulingT = RemoveMin(PQ2);
+	// 			HeapNode *ScdulingC = RemoveMin(cores);
+	// 			// should be the current time plus the execution time.
+	// 			ScdulingC->key = t + ScdulingT->Etime;
+	// 			//insert core back
+	// 			Insert(cores,ScdulingC->key,ScdulingC->TaskName,0,0,0);
+	// 			if(ScdulingC->key <= ScdulingT->Dline){
+	// 				output[output[0]+1] = ScdulingT->TaskName;
+	// 				output[output[0]+2] = ScdulingC->TaskName;
+	// 				output[output[0]+3] = t;
+	// 				output[0] += 3;
+	// 			}else{
+	// 				return 0;
+	// 			}
+	// 		}
+	// 		// for(int i = 1; i<=m;i++){
+	// 		// 	if(timepoint[i]<=t){
+	// 		// 		HeapNode *ScdulingT = RemoveMin(PQ2);
+	// 		// 		//schedule task in core i, increase the corresponding timepoint.
+	// 		// 		timepoint[i] = ScdulingT->Etime + timepoint[i];
+	// 		// 		if(timepoint[i] <=  ScdulingT->Dline){
+	// 		// 			output[output[0]+1] = ScdulingT->TaskName;
+	// 		// 			output[output[0]+2] = i;
+	// 		// 			output[output[0]+3] = t;
+	// 		// 			output[0] += 3;
+	// 		// 			break;
+	// 		// 		}else{
+	// 		// 			return 0;
+	// 		// 		}
+	// 		// 	}
+	// 		// }
+	// 	}
+	// 	t++;
+	// 	//if PQ1 and PQ2 are all empty, then terminates the loop
+	// 	if(PQ1->smallestB == NULL && PQ2->smallestB == NULL){
+	// 		break;
+	// 	}
+	// }
+	// // write output
+	// fp = fopen(f2,"w+");
+	// rewind(fp);
+	// for(int i = 1; i <= output[0];i++){
+	// 	fprintf(fp,"%d",output[i]);
+	// }
+	// fclose(fp);
 	return 1;
 }
 
