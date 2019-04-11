@@ -340,14 +340,26 @@ HeapNode *RemoveMin(BinomialHeap *T)
 	reminder->smallestB = MinNode->child;
 	reminder->tail = MinNode->child;
 	reminder->size = MinNode->degree;
+	printf("reminder:\n");
+	print(reminder);
 	// because child points to the child with largest degree
 	while(reminder->smallestB != NULL && reminder->smallestB->Nextsibling != NULL){
 		reminder->smallestB = reminder->smallestB->Nextsibling;
 	}
+	// lastsibling has problem!!
+	HeapNode *t =reminder->tail;
+	while(t!= NULL){
+		printf("ttt %d,%d,%d\n",t->TaskName,t->degree,t->Dline);
+		t = t->Nextsibling;
+	}
+	//
 	// reverse the heap,right now nextsibling points to the root with smaller k
 	if(reminder->smallestB != NULL){
+		// has problem!!!
 		reverse(reminder);
 	}
+	printf("reversed reminder:\n");
+	print(reminder);
 	MinNode->child = NULL;
 	// Union reminder of the taken-out BT and the original BH
 	BinomialHeap *AfterRm = UnionBH(T,reminder);
@@ -379,8 +391,13 @@ int Min(BinomialHeap *T)
 void print(BinomialHeap *T){
 	HeapNode *t =T->smallestB;
 	while(t!= NULL){
-		printf("task %d,%d,%d\n",t->TaskName,t->degree,t->Dline);
+		printf("from front task %d,%d,%d\n",t->TaskName,t->degree,t->Dline);
 		t = t->Nextsibling;
+	}
+	HeapNode *t2 =T->tail;
+	while(t2!= NULL){
+		printf("from back task %d,%d,%d\n",t->TaskName,t->degree,t->Dline);
+		t2 = t2->Lastsibling;
 	}
 }
 
@@ -423,7 +440,8 @@ int TaskScheduler(char *f1, char *f2, int m )
 		int d = data[i+3];
 		Insert(PQ1,k,n,c,r,d);
 	}
-	// print(PQ1);
+	printf("pq1:\n");
+	print(PQ1);
 	// scheduling
 	BinomialHeap *PQ2 = newHeap();
 	// using PQ to maintain all the cores.
