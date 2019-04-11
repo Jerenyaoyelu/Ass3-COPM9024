@@ -78,7 +78,7 @@ HeapNode *MergeBT(HeapNode *t1, HeapNode *t2){
 	if(t1 == NULL){
 		return NULL;
 	}
-	if(t1->key >= t2->key){
+	if(t1->key > t2->key){
 		t1->Nextsibling = t2->child;
 		if(t2->child!=NULL)
 		{// t2 has more than one node
@@ -194,7 +194,7 @@ BinomialHeap *UnionBH(BinomialHeap *H1, BinomialHeap *H2){
 				//merge two BTs from two BHs
 				new = MergeBT(t1,t2);
 			}else {//binomial trees of smallest k from H1 and H2 have the different degree
-				if(H1->smallestB->degree >= H2->smallestB->degree)
+				if(H1->smallestB->degree > H2->smallestB->degree)
 				{//binomial trees of smallest k from H2 has the smaller degree
 					new = H2->smallestB;
 					H2->size = H2->size - new->degree - 1;
@@ -270,6 +270,7 @@ void Insert(BinomialHeap *T, int k, int n, int c, int r, int d)
 	T->tail = newH->tail;
 }
 
+//O(log(n))
 //reverse a binomial heap (nextsibling points to the root with smaller k)
 void reverse(BinomialHeap *T){
 	HeapNode *crt, *next, *prev;
@@ -358,8 +359,6 @@ HeapNode *RemoveMin(BinomialHeap *T)
 		// has problem!!!
 		reverse(reminder);
 	}
-	// printf("reversed\n");
-	// print(reminder);
 	MinNode->child = NULL;
 	// Union reminder of the taken-out BT and the original BH
 	BinomialHeap *AfterRm = UnionBH(T,reminder);
@@ -438,8 +437,6 @@ int TaskScheduler(char *f1, char *f2, int m )
 	for(int i = 1; i <= m;i++){
 		Insert(cores,0,i,0,0,0);
 	}
-	// print(cores);
-	// int timepoint[m+1];
 	int output[256];
 	int t = 0;
 	while(1){
@@ -465,6 +462,7 @@ int TaskScheduler(char *f1, char *f2, int m )
 			ScdulingC->key = t + ScdulingT->Etime;
 			//insert core back
 			Insert(cores,ScdulingC->key,ScdulingC->TaskName,0,0,0);
+			printf("%d (%d %d) %d\n",ScdulingT->TaskName,ScdulingC->TaskName,ScdulingC->key,t);
 			if(ScdulingC->key <= ScdulingT->Dline){
 				output[output[0]+1] = ScdulingT->TaskName;
 				output[output[0]+2] = ScdulingC->TaskName;
@@ -492,21 +490,21 @@ int TaskScheduler(char *f1, char *f2, int m )
 
 int main() //sample main for testing 
 { int i;
-  i=TaskScheduler("samplefile1.txt", "feasibleschedule1.txt", 4);
-  if (i==0) printf("No feasible schedule!\n");
-  /* There is a feasible schedule on 4 cores */
-  i=TaskScheduler("samplefile1.txt", "feasibleschedule2.txt", 3);
-  if (i==0) printf("No feasible schedule!\n");
-  /* There is no feasible schedule on 3 cores */
-  i=TaskScheduler("samplefile2.txt", "feasibleschedule3.txt", 5);
-  if (i==0) printf("No feasible schedule!\n");
-  /* There is a feasible schedule on 5 cores */
-  i=TaskScheduler("samplefile2.txt", "feasibleschedule4.txt", 4);
-  if (i==0) printf("No feasible schedule!\n");
-  /* There is no feasible schedule on 4 cores */
-  i=TaskScheduler("samplefile3.txt", "feasibleschedule5.txt", 2);
-  if (i==0) printf("No feasible schedule!\n");
-  /* There is no feasible schedule on 2 cores */
+//   i=TaskScheduler("samplefile1.txt", "feasibleschedule1.txt", 4);
+//   if (i==0) printf("No feasible schedule!\n");
+//   /* There is a feasible schedule on 4 cores */
+//   i=TaskScheduler("samplefile1.txt", "feasibleschedule2.txt", 3);
+//   if (i==0) printf("No feasible schedule!\n");
+//   /* There is no feasible schedule on 3 cores */
+//   i=TaskScheduler("samplefile2.txt", "feasibleschedule3.txt", 5);
+//   if (i==0) printf("No feasible schedule!\n");
+//   /* There is a feasible schedule on 5 cores */
+//   i=TaskScheduler("samplefile2.txt", "feasibleschedule4.txt", 4);
+//   if (i==0) printf("No feasible schedule!\n");
+//   /* There is no feasible schedule on 4 cores */
+//   i=TaskScheduler("samplefile3.txt", "feasibleschedule5.txt", 2);
+//   if (i==0) printf("No feasible schedule!\n");
+//   /* There is no feasible schedule on 2 cores */
   i=TaskScheduler("samplefile4.txt", "feasibleschedule6.txt", 2);
   if (i==0) printf("No feasible schedule!\n");
   /* There is a feasible schedule on 2 cores */
