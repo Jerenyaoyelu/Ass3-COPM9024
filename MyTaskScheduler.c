@@ -462,7 +462,7 @@ int TaskScheduler(char *f1, char *f2, int m )
 			ScdulingC->key = t + ScdulingT->Etime;
 			//insert core back
 			Insert(cores,ScdulingC->key,ScdulingC->TaskName,0,0,0);
-			printf("%d (%d %d) %d\n",ScdulingT->TaskName,ScdulingC->TaskName,ScdulingC->key,t);
+			// printf("%d (%d %d) %d\n",ScdulingT->TaskName,ScdulingC->TaskName,ScdulingC->key,t);
 			if(ScdulingC->key <= ScdulingT->Dline){
 				output[output[0]+1] = ScdulingT->TaskName;
 				output[output[0]+2] = ScdulingC->TaskName;
@@ -490,21 +490,21 @@ int TaskScheduler(char *f1, char *f2, int m )
 
 int main() //sample main for testing 
 { int i;
-//   i=TaskScheduler("samplefile1.txt", "feasibleschedule1.txt", 4);
-//   if (i==0) printf("No feasible schedule!\n");
-//   /* There is a feasible schedule on 4 cores */
-//   i=TaskScheduler("samplefile1.txt", "feasibleschedule2.txt", 3);
-//   if (i==0) printf("No feasible schedule!\n");
-//   /* There is no feasible schedule on 3 cores */
-//   i=TaskScheduler("samplefile2.txt", "feasibleschedule3.txt", 5);
-//   if (i==0) printf("No feasible schedule!\n");
-//   /* There is a feasible schedule on 5 cores */
-//   i=TaskScheduler("samplefile2.txt", "feasibleschedule4.txt", 4);
-//   if (i==0) printf("No feasible schedule!\n");
-//   /* There is no feasible schedule on 4 cores */
-//   i=TaskScheduler("samplefile3.txt", "feasibleschedule5.txt", 2);
-//   if (i==0) printf("No feasible schedule!\n");
-//   /* There is no feasible schedule on 2 cores */
+  i=TaskScheduler("samplefile1.txt", "feasibleschedule1.txt", 4);
+  if (i==0) printf("No feasible schedule!\n");
+  /* There is a feasible schedule on 4 cores */
+  i=TaskScheduler("samplefile1.txt", "feasibleschedule2.txt", 3);
+  if (i==0) printf("No feasible schedule!\n");
+  /* There is no feasible schedule on 3 cores */
+  i=TaskScheduler("samplefile2.txt", "feasibleschedule3.txt", 5);
+  if (i==0) printf("No feasible schedule!\n");
+  /* There is a feasible schedule on 5 cores */
+  i=TaskScheduler("samplefile2.txt", "feasibleschedule4.txt", 4);
+  if (i==0) printf("No feasible schedule!\n");
+  /* There is no feasible schedule on 4 cores */
+  i=TaskScheduler("samplefile3.txt", "feasibleschedule5.txt", 2);
+  if (i==0) printf("No feasible schedule!\n");
+  /* There is no feasible schedule on 2 cores */
   i=TaskScheduler("samplefile4.txt", "feasibleschedule6.txt", 2);
   if (i==0) printf("No feasible schedule!\n");
   /* There is a feasible schedule on 2 cores */
