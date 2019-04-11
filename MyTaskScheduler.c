@@ -250,8 +250,7 @@ BinomialHeap *UnionBH(BinomialHeap *H1, BinomialHeap *H2){
 	return NewHp;
 }
 
-// O(log(n))
-// put the time complexity analysis for Insert() here    
+// O(log(n))   
 void Insert(BinomialHeap *T, int k, int n, int c, int r, int d)
 { // k: key, n: task name, c: execution time, r: release time, d:deadline 
 	// You don't need to check if this task already exists in T 	 
@@ -381,15 +380,6 @@ int Min(BinomialHeap *T)
 		crt = crt ->Nextsibling;
 	}
 	return MinNode->key;
-}
-
-// for testing
-void print(BinomialHeap *T){
-	HeapNode *t =T->smallestB;
-	while(t!= NULL){
-		printf("from front task %d,%d\n",t->TaskName,t->degree);
-		t = t->Nextsibling;
-	}
 }
 
 // O(nlog(n))
