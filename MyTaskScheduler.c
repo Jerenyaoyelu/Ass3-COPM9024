@@ -124,13 +124,23 @@ void AddBTToBH(BinomialHeap *NewHp, HeapNode *new){
 					NewHp->smallestB = new;
 				}
 				NewHp->tail->Nextsibling = new->child;
+				//link new child lastsibling to the newhp tail
+				if(new->child != NULL){
+					new->child->Lastsibling = NewHp->tail;
+				}
 				new->child = NewHp->tail;
+				//link new lastsibling to the lastsibling of newhp tail
+				new->Lastsibling = NewHp->tail->Lastsibling;
 				NewHp->tail->Lastsibling = NULL;
 				NewHp->tail = new;
 			}else{// key of tail is smaller than key of new
 				//update degree first.
-				NewHp->tail->degree = NewHp->tail->degree + new->degree + +1;
+				NewHp->tail->degree = NewHp->tail->degree + new->degree +1;
 				new->Nextsibling = NewHp->tail->child;
+				//link lastsibling of child of tail to new
+				if(NewHp->tail->child != NULL){
+					NewHp->tail->child->Lastsibling = new;
+				}
 				NewHp->tail->child = new;
 			}
 		}else{//new added binomial tree has the larger degree than the last binomial tree in the new BH
@@ -394,11 +404,11 @@ void print(BinomialHeap *T){
 		printf("from front task %d,%d,%d\n",t->TaskName,t->degree,t->Dline);
 		t = t->Nextsibling;
 	}
-	HeapNode *t2 =T->tail;
-	while(t2!= NULL){
-		printf("from back task %d,%d,%d\n",t->TaskName,t->degree,t->Dline);
-		t2 = t2->Lastsibling;
-	}
+	// HeapNode *t2 =T->tail;
+	// while(t2!= NULL){
+	// 	printf("from back task %d,%d,%d\n",t->TaskName,t->degree,t->Dline);
+	// 	t2 = t2->Lastsibling;
+	// }
 }
 
 // O(nlog(n))
